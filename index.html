@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        body {
+            margin: 0;
+            background-image: url(./img/acade-1.png);
+            text-align: center;
+            position: absolute;
+            background-repeat: no-repeat;
+        }
+        #game {
+            width: 500px;
+            height: 500px;
+            background:url(./img/background-1.jpg);
+            border-style:outset;
+            border-width:9px;
+            border-color: black;
+            cursor: url(./img/ken-mouse.png) 50 50, auto;
+            overflow: hidden;
+            position: relative;
+            left:65%;
+            right:35%;
+            bottom: 20%
+            
+        }
+        #game:active {
+            cursor: url(./img/ken-mouseactive.gif) 50 50, auto;
+        }
+        
+        .zb{
+            height: 150px;
+            position: absolute;
+        }
+        .zb2{
+            height: 150px;
+            position: absolute;
+        }
+    </style>
+</head>
+<body>
+    <div id="game"></div>
+    <input type="button" value="開始遊戲" id="start">
+    <p>分數:<span id="score">0</span></p>
+    <p>剩餘 <span id="timeleft">60</span> 秒</p>
+    <script src="./jquery-3.4.1.min.js"></script>
+    <script>
+        $(function(){
+            // 判斷是否在遊戲中
+            let isgame = false;
+
+            // 點開始按鈕時
+            $("#start").on("click", function(){
+                // 清空場上所有殭屍
+                $(".zb").remove();
+
+                // 設定分數為0
+                let score = 0;
+
+                // 設定剩餘時間為0
+                let gametime = 60;
+
+                // 停用開始按鈕
+                $(this).attr("disabled", true);
+
+                // 設定分數和時間文字
+                $("#score").text(score);
+                $("#timeleft").text(gametime);
+
+                // 遊戲計時器
+                let gametimer = setInterval(game, 6000);
+
+                // 設定在遊戲中
+                isgame = true;
+
+                // 每秒生一次殭屍
+                let zbtimer = setInterval(spawnZb, 1000);
+
+                // 設定殭屍id
+                let zbid = 0;
+
+                // 每秒生一次殭屍
+                function spawnZb(){
+                    // 隨機0到10的數字
+                    let num = rand(10);
+                    // 如果數字大於5，生殭屍
+                    if(num > 6){
+                        $("#game").append(`<img src="./img/under-strike.gif" class="zb" id="zb${zbid}">`);
+                        $("#game").append(`<img src="./img/kick.gif" class="zb2" id="zb2${zbid}">`);
+                        $(`#zb${zbid}`).css("left", rand(70)+"%");
+                        $(`#zb${zbid}`).css("top", rand(70)+"%");
+                        $(`#zb2${zbid}`).css("left", rand(70)+"%");
+                        $(`#zb2${zbid}`).css("top", rand(70)+"%");
+                        movezb(zbid);
+                        movezb2(zbid);
+                        zbid++;
+                        zb2id++;
+                    }
+                }
+
+                // 移動殭屍
+                function movezb(id){
+                    $(`#zb${id}`).animate({left: rand(70)+"%", top: rand(70)+"%"}, 3000, function(){
+                        movezb(id);
+                    });
+                }
+
+                function movezb2(id){
+                    $(`#zb2${id}`).animate({left: rand(70)+"%", top: rand(70)+"%"}, 3000, function(){
+                        movezb2(id);
+                    });
+                }
+
+                // 隨機 0 到 num 的數字
+                function rand(num){
+                    return Math.floor( Math.random()*num );
+                }
+
+                // 遊戲計時器
+                function game(){
+                    // 減一秒
+                    gametime--;
+                    $("#timeleft").text(gametime);
+                    // 如果目前時間等於0
+                    if(gametime == 0){
+                        // 跳出訊息
+                        setTimeout(function(){alert("時間到!")}, 100);
+                        // 不在遊戲中
+                        isgame = false;
+                        // 停止殭屍移動
+                        $(".zb").stop();
+                        // 清除遊戲計時器和殭屍計時器
+                        clearInterval(gametimer);
+                        clearInterval(zbtimer);
+                        // 啟用開始按鈕
+                        $("#start").attr("disabled", false)
+                    }
+                }
+
+                // 當點殭屍時
+                $("#game").on("click", ".zb", function(){
+                    // 如果在遊戲中
+                    if(isgame){
+                        // 換圖片
+                        $(this).attr("src", "./img/under-strike-dead.gif");
+                        // 忽略滑鼠點擊這個物件，讓滑鼠能點到被他蓋住的東西
+                        $(this).css("pointer-events", "none");
+                        // 停止移動
+                        $(this).stop();
+
+                        $(this).animate({
+                            opacity: 0,
+                        }, 2000, function () {});
+                    
+                        
+                        // 分數加一分
+                        score++;
+                        $("#score").text(score);
+                        
+                        
+                    }
+
+                })
+
+                $("#game").on("click", ".zb2", function(){
+                    // 如果在遊戲中
+                    if(isgame){
+                        // 換圖片
+                        $(this).attr("src", "./img/kick-dead.gif");
+                        // 忽略滑鼠點擊這個物件，讓滑鼠能點到被他蓋住的東西
+                        $(this).css("pointer-events", "none");
+                        // 停止移動
+                        $(this).stop();
+                        
+                        $(this).animate({
+                            opacity: 0,
+                        }, 2000, function () {});
+                    
+                        
+                        // 分數加一分
+                        score = score+2;
+                        $("#score").text(score);
+                        
+                        
+                    }
+                    
+                })
+            })
+        })
+    </script>
+</body>
+</html>
